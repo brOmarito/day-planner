@@ -22,6 +22,7 @@ dateEl.textContent = todayDate;
 
 var hr = moment().format('k');
 formatHrSlots();
+getLocalStorage();
 
 var timer = setInterval(function(){
     var prevHr = hr;
@@ -45,21 +46,30 @@ function formatHrSlots() {
     });
 }
 
+function getLocalStorage() {
+    var localSched = JSON.parse(localStorage.getItem("schedule"));
+    scheduleObj = localSched;
+    Object.keys(scheduleObj).forEach(key => {
+        var taskList = scheduleObj[key];
+        var taskListVar = document.querySelector("#task-list-" + key);
+        taskList.forEach((task, index) => {
+            taskListVar.appendChild(createTaskListItem(index, key, task));
+        });
+    });
+}
+
 function addTextToList() {
     var displayedInput = document.querySelector(".displayed-input");
-    var trimmed = displayedInput.value.trim();
     if (displayedInput.value.trim().length > 0) {
         var parentHrEl = document.querySelector("#group-item-" + getElementHrNum(displayedInput));
         var hrNum = getElementHrNum(parentHrEl);
         scheduleObj[hrNum].push(displayedInput.value);
         localStorage.setItem("schedule", JSON.stringify(scheduleObj));
         var taskList = parentHrEl.querySelector(".task-list");
-        var taskItem = document.createElement("li");
-        taskItem.id = "item-" + scheduleObj[hrNum].length + "-hr-" + hrNum;
-        taskItem.textContent = displayedInput.value;
-        taskList.appendChild(taskItem);
+        taskList.appendChild(createTaskListItem(scheduleObj[hrNum].length, hrNum, displayedInput.value));
         displayedInput.value = "";
         displayedInput.classList.remove("displayed-input");
+        displayedInput.setAttribute("placeholder", "");
     } else {
         displayedInput.classList.remove("displayed-input");
     }
@@ -69,20 +79,65 @@ function getElementHrNum(element) {
     return element.id.split("-").at(-1);
 }
 
+function createTaskIcons(taskItemId) {
+    var iconDiv = document.createElement("div");
+    // iconDiv.innerHTML = '<i id="edit-icon-' + taskItemId + '" class="far fa-edit edit-icon"></i>'
+    iconDiv.innerHTML += '<i id="delete-icon-' + taskItemId + '" class="fas fa-times delete-icon"></i>';
+    iconDiv.classList.add("task-item-icon-container")
+    return iconDiv;
+}
+
+function createTaskListItem(index, key, task) {
+    var li = document.createElement("li");
+    var id = "item-" + index + "-hr-" + key;
+    li.id = id;
+    li.textContent = task;
+    li.appendChild(createTaskIcons(id));
+    return li;
+}
+
+function updateLocalSched(hrTaskList) {
+    var taskArray = [];
+    var childArray = hrTaskList.children;
+    for(listItem of hrTaskList.children) {
+        taskArray.push(listItem.textContent);
+    };
+    scheduleObj[getElementHrNum(hrTaskList)] = taskArray;
+    localStorage.setItem("schedule", JSON.stringify(scheduleObj));
+}
+
 hourList.addEventListener("click", function(event) {
     var element = event.target;
     var displayedInput = document.querySelector(".displayed-input");
-    if (displayedInput && element !== displayedInput) {
-        // displayedInput.classList.add("hidden");
-        var inputArea = element.querySelector("#input-area-" + getElementHrNum(element));
+    var inputArea = document.querySelector("#input-area-" + getElementHrNum(element));
+    var textAreaEl = document.querySelector("#text-input-" + getElementHrNum(element));
+    if (element.matches(".delete-icon")) {
+        event.stopPropagation();
+        var liId = element.id.replace("delete-icon-", "");
+        var targettedLi = document.querySelector(element.id.replace("delete-icon-", "#"));
+        var taskListArea = document.querySelector("#task-list-" + getElementHrNum(targettedLi));
+        taskListArea.removeChild(targettedLi);
+        updateLocalSched(taskListArea);
+    } else if (element.matches(".btn")) {
+        event.stopPropagation();
+        if(element.id.includes("save")) {
+            if (textAreaEl.value.trim.length === 0) {
+                textAreaEl.value = "";
+                textAreaEl.setAttribute("placeholder", "Please provide a value");
+            } else {
+                addTextToList();
+            }
+        } else {
+            inputArea.classList.add("hidden");
+            textAreaEl.value = "";
+            textAreaEl.setAttribute("placeholder", "");
+        }
+    } else if (displayedInput && element !== displayedInput) {
         inputArea.classList.add("hidden");
         addTextToList();
     } else {
         event.stopPropagation();
-        var textId = "#text-input-" + getElementHrNum(element);
-        var textAreaEl = document.querySelector(textId);
-        // textAreaEl.classList.remove("hidden");
-        var inputArea = element.querySelector("#input-area-" + getElementHrNum(element));
+        textAreaEl.setAttribute("placeholder", "");
         inputArea.classList.remove("hidden");
         textAreaEl.classList.add("displayed-input");
     }
@@ -103,6 +158,11 @@ document.addEventListener("click", function(event) {
 hourList.addEventListener("keydown", function(event) {
     var element = event.target;
     if (element.matches(".task-input") && event.key === "Enter") {
+        event.preventDefault();
+        var inputArea = document.querySelector("#input-area-" + getElementHrNum(element));
         addTextToList();
+        inputArea.classList.add("hidden");
+        element.value = "";
+        // document.activeElement.blur();
     }
 });

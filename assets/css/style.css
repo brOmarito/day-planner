@@ -98,3 +98,20 @@ textarea {
   float: right;
   margin: 0px 4px;
 }
+
+.edit-icon {
+  color: #06aed5;
+}
+
+.delete-icon {
+  color: red !important;
+}
+
+.task-item-icon-container {
+  display: inline-block;
+  margin-left: 10px;
+}
+
+.task-item-icon-container i {
+  margin: 0px 2px;
+}
