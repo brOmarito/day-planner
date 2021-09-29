@@ -48,7 +48,9 @@ function formatHrSlots() {
 
 function getLocalStorage() {
     var localSched = JSON.parse(localStorage.getItem("schedule"));
-    scheduleObj = localSched;
+    if (localSched) {
+        scheduleObj = localSched;
+    }
     Object.keys(scheduleObj).forEach(key => {
         var taskList = scheduleObj[key];
         var taskListVar = document.querySelector("#task-list-" + key);
