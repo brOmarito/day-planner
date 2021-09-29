@@ -17,4 +17,4 @@ If I were to do it over, I would go about a path of adding an event listener on 
 ## Snapshot/Link
 Link to the deployed application: https://bromarito.github.io/day-planner/index.html
 
-![Snapshot of the deployed application](/assets/pics/snapshot.png)
+![Snapshot of the deployed application](/assets/pics/snapshot.PNG)
