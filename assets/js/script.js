@@ -91,6 +91,7 @@ function createTaskListItem(index, key, task) {
     var li = document.createElement("li");
     var id = "item-" + index + "-hr-" + key;
     li.id = id;
+    li.classList.add("task-item");
     li.textContent = task;
     li.appendChild(createTaskIcons(id));
     return li;
@@ -98,12 +99,52 @@ function createTaskListItem(index, key, task) {
 
 function updateLocalSched(hrTaskList) {
     var taskArray = [];
-    var childArray = hrTaskList.children;
     for(listItem of hrTaskList.children) {
         taskArray.push(listItem.textContent);
     };
     scheduleObj[getElementHrNum(hrTaskList)] = taskArray;
     localStorage.setItem("schedule", JSON.stringify(scheduleObj));
+}
+
+function removeTaskItem(element) {
+    var targettedLi = document.querySelector(element.id.replace("delete-icon-", "#"));
+    var taskListArea = document.querySelector("#task-list-" + getElementHrNum(targettedLi));
+    taskListArea.removeChild(targettedLi);
+    updateLocalSched(taskListArea);
+}
+
+// Future function for editing task items
+// function editTaskItem(element) {
+//     var targettedLi = document.querySelector(element.id.replace("edit-icon-", "#"));
+//     // var taskListArea = document.querySelector("#task-list-" + getElementHrNum(targettedLi));
+//     // taskListArea.removeChild(targettedLi);
+//     var textArea = document.createElement("textarea");
+//     textArea.value = targettedLi.textContent;
+//     targettedLi.innerHTML = textArea;
+
+//     updateLocalSched(taskListArea);
+// }
+
+function buttonActions(element, textAreaEl, inputArea) {
+    if(element.id.includes("clear")) {
+        var taskListEl = document.querySelector(element.id.replace("clear-", "#"));
+        taskListEl.innerHTML = "";
+        updateLocalSched(taskListEl);
+        inputArea.classList.add("hidden");
+    } else if(element.id.includes("save")) {
+        var inputtedTask = textAreaEl.value.trim();
+        if (inputtedTask.length === 0) {
+            textAreaEl.value = "";
+            textAreaEl.setAttribute("placeholder", "Please provide a value");
+        } else {
+            addTextToList();
+        }
+        inputArea.classList.add("hidden");
+    } else {
+        inputArea.classList.add("hidden");
+        textAreaEl.value = "";
+        textAreaEl.setAttribute("placeholder", "");
+    }
 }
 
 hourList.addEventListener("click", function(event) {
@@ -113,25 +154,10 @@ hourList.addEventListener("click", function(event) {
     var textAreaEl = document.querySelector("#text-input-" + getElementHrNum(element));
     if (element.matches(".delete-icon")) {
         event.stopPropagation();
-        var liId = element.id.replace("delete-icon-", "");
-        var targettedLi = document.querySelector(element.id.replace("delete-icon-", "#"));
-        var taskListArea = document.querySelector("#task-list-" + getElementHrNum(targettedLi));
-        taskListArea.removeChild(targettedLi);
-        updateLocalSched(taskListArea);
+        removeTaskItem(element)
     } else if (element.matches(".btn")) {
         event.stopPropagation();
-        if(element.id.includes("save")) {
-            if (textAreaEl.value.trim.length === 0) {
-                textAreaEl.value = "";
-                textAreaEl.setAttribute("placeholder", "Please provide a value");
-            } else {
-                addTextToList();
-            }
-        } else {
-            inputArea.classList.add("hidden");
-            textAreaEl.value = "";
-            textAreaEl.setAttribute("placeholder", "");
-        }
+        buttonActions(element, textAreaEl, inputArea);
     } else if (displayedInput && element !== displayedInput) {
         inputArea.classList.add("hidden");
         addTextToList();
@@ -148,7 +174,6 @@ document.addEventListener("click", function(event) {
     if (displayedInput) {
         var element = event.target;
         if (element !== displayedInput) {
-            // displayedInput.classList.add("hidden");
             displayedInput.parentElement.classList.add("hidden");
             addTextToList();
         }
@@ -163,6 +188,5 @@ hourList.addEventListener("keydown", function(event) {
         addTextToList();
         inputArea.classList.add("hidden");
         element.value = "";
-        // document.activeElement.blur();
     }
 });

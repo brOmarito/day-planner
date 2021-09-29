@@ -105,13 +105,26 @@ textarea {
 
 .delete-icon {
   color: red !important;
+  cursor: pointer;
 }
 
 .task-item-icon-container {
-  display: inline-block;
+  display: none;
   margin-left: 10px;
 }
 
 .task-item-icon-container i {
   margin: 0px 2px;
+}
+
+.clear-list-btn {
+  float: left !important;
+}
+
+.task-item:hover .task-item-icon-container {
+  display: inline-block;
+}
+
+.task-item {
+  padding: 2px;
 }
